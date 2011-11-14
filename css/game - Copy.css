@@ -1,0 +1,58 @@
+
+#board
+{
+	position         : absolute;
+	top              : 10%;
+	left             : 22%;
+	border-style     : ridge;
+	border-width     : 15px;
+	border-color     : #fffc12;
+}
+
+#selection
+{
+	position         : relative;
+	width            : 500px;
+	height           : 50px;
+	top              : 20%;
+	left             : 30%;
+}
+
+#score
+{
+	position         : absolute;
+	width            : 35px;
+	top              : 28px;
+	left             : 60px;
+	text-align       : center;
+}
+
+#scoreLabel
+{
+	position         : absolute;
+	top              : 31px;
+	left             : 10px;
+}
+#fileinput
+{
+	position         : absolute;
+	top              : 27px;
+	left             : 270px;
+}
+
+#fileLabel
+{
+	position         : absolute;
+	top              : 31px;
+	left             : 140px;
+}
+
+#words
+{
+	position         : absolute;
+	width            : 200px;
+	height           : 100px;
+	top              : 100px;
+	left             : 120px;
+	background-color : #946d46;
+}
