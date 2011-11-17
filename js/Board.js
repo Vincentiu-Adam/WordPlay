@@ -40,6 +40,7 @@ function Board( canvasName, top, left, letters, scale )
 Board.prototype.constructor = Board;
 Board.LINE_WIDTH   = 2;
 Board.BORDER_WIDTH = 1;
+Board.GRID_SIZE = 9;
 
 function convertToData( dict )
 {
@@ -211,6 +212,7 @@ Board.prototype.isMatch = function ( str )
 		wordList = wordList.next[2];
 	}
 }
+
 Board.prototype.findAllWords = function ( str )
 {
 	var wordList = this.getLowestLevelList( str );
@@ -264,7 +266,7 @@ Board.prototype.checkBoard = function ()
 Board.prototype.loadBoard = function( letters )
 {
 	if ( !(letters instanceof Array) ) throw "Error : board must contain an Array of letters";
-	if ( ( letters.length * letters[0].length ) != 81 ) throw "Error : board of size 9 x 9, not " + ( letters.length * letters.length[0] );
+	if ( !( letters.length == 9 && letters[0].length == 9 ) ) throw "Error : board of size 9 x 9, not " + letters.length + " x " + letters.length[0];
 
 	var result = [];
 //	var posX = scale * Board.BORDER_WIDTH, posY = scale * Board.BORDER_WIDTH;

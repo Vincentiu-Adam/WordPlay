@@ -3,11 +3,19 @@
 function Generator( distribution )
 {
 	this.distribution = distribution;
+	this.totalV = 0;
+	this.totalC = 0;
+	this.totalO = 0;
+	this.isGenerating = true;
 }
 
 Generator.vowels = "aeiouy";
 Generator.consonants = "tnshrdlm";
 Generator.other  = "bcfgjkpqvwxz";
+
+Generator.TOTAL_VOWELS = 35;
+Generator.TOTAL_CONSONANTS = 25;
+Generator.TOTAL_OTHER  = 20;
 
 Generator.prototype.constructor = Generator;
 
@@ -56,14 +64,42 @@ Generator.prototype.generateOther = function()
 Generator.prototype.generateCharacter = function() 
 {
 	var character;
-	this.distribution.cumulateSum();
+	//distribution.cumulateSum();
+	
+	if ( this.isGenerating )
+	{
+		if ( this.totalV !== Generator.TOTAL_VOWELS )
+		{
+			this.totalV++;
+			character = this.generateVowel();
+		}
+		else
+			if ( this.totalC !== Generator.TOTAL_CONSONANTS )
+			{
+				this.totalC++;
+				character = this.generateConsonant();
+			}
+			else
+			{
+				if ( this.totalO !== Generator.OTHER )
+				{
+					this.totalO++;
+					character = this.generateOther();
+				}
+				else
+					isGenerate = false;
+			}
+	}
+	else
+	{
 		switch ( this.distribution.find( Math.random() ) )
 		{
 			case 0  : character = this.generateVowel() ; break;
 			case 1  : character = this.generateConsonant(); break;
 			default : character = this.generateOther(); break;
 		}
-		
+	}
+	
 	return character;
 }
 Generator.prototype.generateLine = function( size )

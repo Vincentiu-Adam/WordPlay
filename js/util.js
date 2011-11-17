@@ -99,7 +99,12 @@ function timeRemaining()
 		window.clearInterval( timeID );
 	//window.clearInterval( checkID );
 		isGameRunning = false;
-		alert( "Game OVER!" );	
+		isEndGame = true;
+	//	alert( "Game OVER!" );	
+		menus.drawEndGame();
+		t = 59;
+	//	gameBoard.canvas.removeEventListener( "mouseMove", mouseMoveEvent, false );
+	//	gameBoard.canvas.removeEventListener( "click", mouseClickEvent, false );
 	}
 		
 	t--;

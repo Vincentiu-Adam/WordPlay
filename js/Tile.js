@@ -3,12 +3,13 @@
 function Tile( posX, posY, tileLetter, mult, color, image )
 {
 	this.letter = new Letter( tileLetter, "rgb( 199, 166, 115 )" ); 
+		
+	this.color  = ( ( typeof color ) === "string" ) ? color : "rgb( 255, 255, 255 )";
 	this.mult   = this.mapColor();
 	
-	this.color  = ( ( typeof color ) === "string" ) ? color : "rgb( 255, 255, 255 )";
 	this.image  = ( ( image != null ) ) ? image : null;
 	
-	this.pos = { x : posX, y : posY }; 
+	this.pos   = { x : posX, y : posY }; 
 }
 
 Tile.prototype.constructor = Tile;

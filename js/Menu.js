@@ -18,6 +18,12 @@ function Menu( canvasName )
 	
 	this.returnImage = new Image();
 	this.returnImage.src = "images/Menu/return.png";
+	
+	this.retryImage = new Image();
+	this.retryImage.src = "images/Menu/retry.png";
+	
+	this.gameOverImage = new Image();
+	this.gameOverImage.src = "images/Menu/gameOver.png";
 }
 
 Menu.prototype.constructor = Menu;
@@ -96,7 +102,7 @@ Menu.prototype.drawHowToPlay = function()
 	context.fillRect( 0,0, this.width, this.height );
 	
 	var backImage = new Image();
-	backImage.src = "images/Menu/howToPlay.png";
+	backImage.src = "images/Menu/howToPlayE.png";
 	
 	context.drawImage( backImage, 0, 0, 580, 580 );
 	
@@ -126,5 +132,24 @@ Menu.prototype.startGame = function()
 	gameBoard.draw();
 	gameBoard.checkBoard();
 	startTime();
-//	checkID = window.setInterval( "gameBoard.checkBoard()", 500 ); 
+//	checkID = window.setInterval( "gameBoard.checkBoard()", 2000 ); 
+}
+
+Menu.prototype.drawEndGame = function()
+{
+	var context = this.canvas.getContext( "2d" );
+	
+	this.canvas.addEventListener( "mousemove", mouseMoveEvent, false );
+	context.fillStyle = "rgba( 128,128,128, 0.4)";
+	context.fillRect( 0, 0, this.width, this.height );
+	
+	context.drawImage( this.gameOverImage, 150, 150, 305, 78 );
+	context.drawImage( this.retryImage, 180, 248, this.retryImage.width, this.retryImage.height );
+}
+
+Menu.prototype.drawQuitGame = function()
+{
+	var context = this.canvas.getContext( "2d" );
+	
+	context.drawImage( this.retryImage, 180, 248, this.retryImage.width, this.retryImage.height );
 }

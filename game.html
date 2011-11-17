@@ -1,80 +1,85 @@
 <!DOCTYPE HTML>
-<head>
-	<title> Word Play </title>
-	<link rel = "stylesheet" type = "text/css" href = "css/game.css" >
-	<script type = "text/javascript" src = "dict/dict.js"></script>
-	<script type = "text/javascript" src = "js/util.js"></script>
-	<script type = "text/javascript" src = "js/gameLogic.js"></script>	
-	<script type = "text/javascript" src = "js/Generator.js"></script>
-	<script type = "text/javascript" src = "js/Letter.js"></script>
-	<script type = "text/javascript" src = "js/Tile.js"></script>
-	<script type = "text/javascript" src = "js/Board.js"></script>
-	<script type = "text/javascript" src = "js/Menu.js"></script>
-</head>
-	<body onload = "init();">	
-	<div id = "gameSpace" >
-		<div id = "achievement">
-			<img class = "image" src = "images/trophies/bronze.png" alt = "Trophy">
-			<p class = "text"> Achievement </br> Unlocked </p>
-		</div>
-		<div id = "header">
-			<div id = "dictSelection">
-				<select class = "selection" >
-					<option value = "EN" selected = "selected">English Dictionary</option>
-					<option value = "FR">French Dictionary</option>
-				</select>
+<html>
+	<head>
+		<title> Word Play </title>
+		<link rel = "stylesheet" type = "text/css" href = "css/game.css" >
+		<script type = "text/javascript" src = "dict/dict.js"></script>
+		<script type = "text/javascript" src = "js/util.js"></script>
+		<script type = "text/javascript" src = "js/gameLogic.js"></script>	
+		<script type = "text/javascript" src = "js/Generator.js"></script>
+		<script type = "text/javascript" src = "js/Letter.js"></script>
+		<script type = "text/javascript" src = "js/Tile.js"></script>
+		<script type = "text/javascript" src = "js/Board.js"></script>
+		<script type = "text/javascript" src = "js/Menu.js"></script>
+	</head>
+		<body onload = "init();" onmousedown = "return false;">	
+		<div id = "gameSpace" >
+			<div id = "achievement">
+				<img class = "image" src = "images/trophies/bronze.png" alt = "Trophy">
+				<p class = "text"> Achievement </br> Unlocked </p>
 			</div>
-			<div id = "showInHeader">
-				<div id = "showButton" class = "button left right">
-					Show Leaderboard >>
+			<div id = "header">
+				<div id = "dictSelection" >
+					<select class = "selection" >
+						<option value = "EN" selected = "selected">English Dictionary</option>
+					</select>
+				</div>
+				<div id = "showInHeader">
+					<div id = "showButton" class = "button left right">
+						Show Leaderboard >>
+					</div>
+				</div>
+				<div id = "showInHeader" style = "margin-right : 105px;">
+					<div class = "label"> Time remaining :
+						<p id = "timer" class = "modText"> 60 </p>
+					</div>
 				</div>
 			</div>
-			<div id = "showInHeader" style = "margin-right : 105px;">
-				<div class = "label"> Time remaining :
-					<p id = "timer" class = "modText"> 60 </p>
+			<div id = "scoreOutput">
+				<div class = "space"></div>
+				<div class = "label" > Score : 
+					<p id = "score" class = "modText"> 0 </p>
+				</div>
+				<div class = "label"> Combo : 
+					<p id = "combo" class = "modText"> 1x </p>
+				</div>
+				<div class = "label"> Recent Words : 	
+					<ul name = "wordList" id = "list">	
+						<li><p></p></li>
+						<li><p></p></li>
+						<li><p></p></li>
+						<li><p></p></li>
+						<li><p></p></li>
+					</ul>
+				</div>
+				<div class = "label"> Longest Word :
+					<p id = "longestWord" class = "modText"></p>
+				</div>
+				<div class = "label"> Highest Word Score :
+					<p id = "highestWordScore" class = "modText"> 0 </p>
+				</div>
+				<div class = "label" > Highest Scoring Word : 
+					<p id = "wordFormat" class = "modText" 
+					   style = "text-align: center; display : block; margin-top : 0px; 
+					            margin-bottom : 0px; margin-left : 0px" > 
+					</p>
+					<p id = "highestScoringWord" style = "display : none;" ></p>
 				</div>
 			</div>
-		</div>
-		<div id = "scoreOutput">
-			<div class = "space"></div>
-			<div class = "label" > Score : 
-				<p id = "score" class = "modText"> 1234 </p>
+			
+			<div id = "border" >
+				<canvas id = "board" width = "576px" height = "576px">
+					Canvas element not supported in current browser. Please update to a newer version
+				</canvas>	
 			</div>
-			<div class = "label"> Multiplier : 
-				<p class = "modText"> 4x </p>
+			<div id = "leaderboard">
+				<div class = "space"></div>
+				<div class = "label"> Name : &nbsp &nbsp &nbsp High Score : </div>
+					<ul id = "list" class = "noBullet">
+					</ul>
 			</div>
-			<div class = "label"> Recent Words : 	
-				<ul id = "list">	
-					<li><p>Mars</p></li>
-					<li><p>Medusa</p></li>
-					<li><p>Apple</p></li>
-					<li><p>Something</p></li>
-					<li><p>Class</p></li>
-				</ul>
-			</div>
-			<div class = "label"> Longest Word :
-				<p class = "modText"> Something </p>
-			</div>
-			<div class = "label"> Highest Word Score :
-				<p class = "modText"> 15 </p>
-			</div>
-		</div>
-		
-		<div id = "border" >
-			<canvas id = "board" width = "576px" height = "576px">
-				Canvas element not supported in current browser. Please update to a newer version
-			</canvas>	
-		</div>
-		<div id = "leaderboard">
-			<div class = "space"></div>
-			<div class = "label"> Name : &nbsp &nbsp &nbsp High Score : </div>
-				<ul id = "list" class = "noBullet">
-					<li><p class = "name">A dude</p><p class = "score">1345</p></li>
-					<li><p class = "name">Anotherdude</p><p class = "score">133445</p></li>
-					<li><p class = "name">ETC</p><p class = "score">1345</p></li>
-				</ul>
-		</div>
-	</div> 
-	</body>
-	<script>
-	</script>
+		</div> 
+		</body>
+		<script>
+		</script>
+</html>

@@ -11,8 +11,6 @@ window.requestAnimFrame = (function() {
               };
     })();
 
-var image   = new Image();
-image.src = "images/grid.gif";
 
 function getCSSProperty( element, property )
 {
@@ -49,13 +47,12 @@ var redrawCache = new Array(),
 	physicsList = new Array(),
 	reloadCols = new Array();
 
-var	menuImage = new Image();
-	menuImage.src = "resources/menu.png";
 var isMainMenu    = true,
 	isStartGame   = false,
 	isHowToPlay   = false,
 	isQuitGame    = false,
-	isGameRunning = false;
+	isGameRunning = false,
+	isEndGame     = false;
 
 var triggerRedraw = false, 
 	justSwapped   = false;
@@ -108,6 +105,7 @@ function init()
 	document.getElementById( "showButton" ).onclick = animate;
 	
 	run();
+	checkWords();
 }
 
 function renderMenus() 
@@ -129,10 +127,36 @@ function renderMenus()
 	{
 		if ( confirm( "Are you sure you want to quit?" ) )
 			window.close();
-		isQuitGame = false;
+	}
+	
+	if ( isEndGame )
+	{
+		menus.drawQuitGame();
 	}
 }
 
+function backToMenu()
+{
+	isMainMenu    = true;
+	isGameRunning = false;
+	
+	document.getElementById( "board" ).addEventListener( "mousemove", mouseMoveEvent , false );
+	document.getElementById( "board" ).addEventListener( "click", mouseClickEvent, false );
+	
+	menus.canvas.getContext( "2d" ).clearRect( 0, 0, this.width, this.height );
+	
+//	document.getElementById( "board" ).style.position = "absolute";
+//	document.getElementById( "board" ).style.top      = "10px";
+//	document.getElementById( "board" ).style.left     = "0px";
+//	document.getElementById( "board" ).style.width    = "800px";
+//	document.getElementById( "board" ).canvas.style.height   = "600px";
+//	document.getElementById( "board" ).canvas.style.display  = "block";	
+	
+	document.getElementById( "header" ).style.display = "none";
+	document.getElementById( "scoreOutput" ).style.display = "none";
+	
+	document.getElementById( "border" ).style.backgroundImage = "";
+}
 function getScrollOffsets( win )  
 {
 	win = win || window;
@@ -239,6 +263,20 @@ function mouseMoveEvent( event )
 		console.log( "x : " + mouseX + " y : " + mouseY );
 	}
 	
+	if ( isEndGame )
+	{
+		if ( mouseX > 183 && mouseX < 398 )
+			if ( mouseY > 251 && mouseY < 283 )
+			{
+				this.style.cursor = "pointer";
+				menus.retryImage.src = "images/Menu/retryS.png";
+			}
+			else
+				menus.retryImage.src = "images/Menu/retry.png";
+			
+		console.log( "x : " + mouseX + " y : " + mouseY );
+	}
+	
 	if ( isGameRunning )
 	{
 		var tileX  = Math.floor( mouseX / ( gameBoard.scale * ( Board.BORDER_WIDTH + Tile.WIDTH  + Board.LINE_WIDTH/2 ) ) ), 
@@ -329,6 +367,47 @@ function addToArray( theArray, list )
 		theArray.unshift( list[i] );
 }
 
+function updateWordList( wordList )
+{
+	var unorderedList = document.getElementsByName( "wordList" )[0];
+	var listObjects   = unorderedList.getElementsByTagName( "li" );
+	var listSize = listObjects.length;
+	
+	var curLongestWord = document.getElementById( "longestWord" ).innerHTML;
+	
+	for ( var i = 0; i < wordList.length; i++ )
+	{
+		var listItem = document.createElement( "li" );
+		listItem.innerHTML = "<p>"+ wordList[i] + "</p>";
+		
+		if ( wordList[i].length >= curLongestWord.length )
+			curLongestWord = wordList[i];
+		
+		unorderedList.removeChild( listObjects[listSize - 1] ); 
+		unorderedList.insertBefore( listItem, listObjects[0] );
+	}
+	
+	document.getElementById( "longestWord" ).innerHTML = curLongestWord;
+}
+
+function createBlock( board, colPos, upToPosition )
+{
+	var result = new Array();
+	
+	for ( var i = 0; i < upToPosition; i++ )
+	{
+		var pos = { x : colPos, y : i };
+		result.push( { boardPos : pos, ltr : board.tiles[i][colPos].letter } );
+	}		
+	return result;
+}
+
+function refineFoundWords( words )
+{
+	return gameBoard.findAllWords( words.max );
+}
+
+var blocks = [];
 function wordCheck( position, board )
 {
 	if ( board.dictionary == null ) throw "Error please load dictionary first ";
@@ -343,50 +422,80 @@ function wordCheck( position, board )
 		colString += ( board.tiles[i][col] != null ) ? board.tiles[i][col].toString() : "";
 	}
 	
+	// check words in a row
 	var color = "rgba( 255, 175, 4, 80 )";
 	var words = board.findAllWords( rowString.toLowerCase() );
 	
-	var wordMatches = words.matches;
+	var wordList = new Array();
+	
+	var highestWordScore = parseInt( document.getElementById( "highestWordScore" ).innerHTML );
+	var highestScoringWord = document.getElementById( "highestScoringWord" ).innerHTML;
+	var comboBar = document.getElementById( "combo" );
+	var format,
+		highScoreFormat;
+	
+	var wordMatches = { word : words.max, from : words.pos, to : words.max.length };
 	var combo = 0, totalScore = 0;
 	var multiplier = 1;
 	var isMatch = false;
+	
 	if ( !isEmpty( wordMatches ) )
 	{
 		combo += wordMatches.length;
 		isMatch = true;
 		for ( var i = 0; i < wordMatches.length; i++ )
 		{
+			wordList.push( wordMatches[i].word );
+			format = "";
+			multiplier = 1;
+				
 			var tileScore = 0;
 			for ( var j = wordMatches[i].from; j <= wordMatches[i].to; j++ )
-			{			
+			{		
 				var tile = board.tiles[row][j];
 				
 				if ( tile.color == "red" ) 
-					multiplier = 2;
+					multiplier *= 2;
 				if ( tile.color == "orange" )
-					multiplier = 3;
+					multiplier *= 3;
 					
 				tile.letter.color = color;
 				tileScore += tile.score();
 				
+				format += "<span style = 'color: " + tile.color + ";'>" + tile.letter.character.toLowerCase() + "</span>";
 				updateList.push( tile );
 				changedList.push( tile );
 				clearList.push( { aTile : tile, pos : { x : j, y : row } } );
 				
 				if ( reloadCols.indexOf( j ) == -1 )
 					reloadCols.push( j );
-	
+				blocks.push( createBlock( gameBoard, j, row ) );
 			}
-			totalScore += multiplier * tileScore;
-			var wordList = document.getElementById( "list" );  
+			
+			var wordScore = multiplier * tileScore;
+			
+			if ( wordScore >= highestWordScore )
+			{
+				highestWordScore = wordScore;
+				highestScoringWord = wordMatches[i].word;
+				highScoreFormat = format;
+			}
+			totalScore += wordScore;
+		//	var wordList = document.getElementById( "list" );  
 		//	wordText.appendChild( document.createTextNode( text ) );
-			console.log( "Word : " + wordMatches[i].word + " score : " + multiplier * tileScore + " multiplier : " + multiplier );
+			console.log( "Word : " + wordMatches[i].word + " score : " + wordScore + " multiplier : " + multiplier );
 		}
 	}
 	
-	words = board.findAllWords( colString.toLowerCase() )
+	document.getElementById( "highestWordScore" ).innerHTML = " " + highestWordScore + " ";
+	document.getElementById( "highestScoringWord" ).innerHTML = highestScoringWord;
+	if ( typeof ( highScoreFormat ) !== "undefined" )
+		document.getElementById( "wordFormat" ).innerHTML = highScoreFormat;
 	
-	wordMatches = words.matches;
+	// check words on column
+	words = board.findAllWords( colString.toLowerCase() );
+	
+	wordMatches = { word : words.max, from : words.pos, to : words.max.length };
 	multiplier = 1;
 	if ( !isEmpty( wordMatches ) )
 	{
@@ -394,6 +503,12 @@ function wordCheck( position, board )
 		isMatch = true;
 		for ( var i = 0; i < wordMatches.length; i++ )
 		{
+			wordList.push( wordMatches[i].word );
+			format = "";
+			multiplier = 1;
+			
+			blocks.push( createBlock( gameBoard, col, wordMatches[i].from ) );
+			
 			var tileScore = 0;
 			for ( var j = wordMatches[i].from; j <= wordMatches[i].to; j++ )
 			{
@@ -405,20 +520,40 @@ function wordCheck( position, board )
 					multiplier = 2;
 				if ( tile.color == "orange" )
 					multiplier = 3;
-					
+				
+				format += "<span style = 'color: " + tile.color + ";'>" + tile.letter.character.toLowerCase() + "</span>";
 				tileScore += tile.score();
 		
 				updateList.push( tile );
 				changedList.push( tile );				
 				clearList.push( { aTile : tile, pos : { x : col, y : j } } );
 			}
-			totalScore += multiplier * tileScore;
-			console.log( "Word : " + wordMatches[i].word + " score : " + multiplier * tileScore + " multiplier : " + multiplier );
+			
+			var wordScore = tileScore * multiplier;
+			
+			if ( wordScore >= highestWordScore )
+			{
+				highestWordScore = wordScore;
+				highestScoringWord = wordMatches[i].word;
+				highScoreFormat  = format;
+			}
+			
+			totalScore += wordScore;
+			console.log( "Word : " + wordMatches[i].word + " score : " + wordScore + " multiplier : " + multiplier );
 		}
+		
+		document.getElementById( "highestWordScore" ).innerHTML = " " + highestWordScore + " ";
+		document.getElementById( "highestScoringWord" ).innerHTML = highestScoringWord;
+		if ( typeof ( highScoreFormat ) !== "undefined" )
+			document.getElementById( "wordFormat" ).innerHTML = highScoreFormat;
 		
 		if ( reloadCols.indexOf( col ) == -1 )
 			reloadCols.push( col );
 	}
+	
+	if ( combo !== 0 )
+		comboBar.innerHTML = " " + combo + "x ";
+	updateWordList( wordList );
 	
 	if ( isMatch ) 
 	{
@@ -488,6 +623,16 @@ function mouseClickEvent( event )
 				isHowToPlay = false;
 			}
 		
+	}	
+	
+	if ( isEndGame )
+	{
+		if ( mouseX > 183 && mouseX < 398 )
+			if ( mouseY > 251 && mouseY < 283 )
+			{
+				isStartGame = true;
+				isEndGame  = false;
+			}
 	}
 	
 	if ( isGameRunning )
@@ -641,36 +786,74 @@ function updateScore()
 		document.getElementById( "score" ).innerHTML = " " + gameBoard.totalScore + " ";
 }
 
-function removeElement( element, pos, anArray ) 
+function removeElement( anArray, pos ) 
 {
 	if ( pos != 0 ) 
 	{
+		var elementToRemove = anArray[pos];
+		
 		anArray[pos] = anArray[0];
-		anArray[0] =  element;
+		anArray[0] =  elementToRemove;
 	}
 	
 	anArray.shift();
+}
+
+function updateBlocks()
+{
+	for ( var i = 0; i < blocks.length; i++ )
+	{	
+		var block = blocks[i];
+		
+		if ( block.length === 0 )
+		{
+			var character = generator.generateCharacter();
+			var letter = new Letter( character.toUpperCase(), "rgb( 199, 166, 115 )" );
+			var pos = { x : 0, y : 0 };
+			
+			block.push( { boardPos : pos, ltr : letter } );
+		}
+		else
+		{
+			var pos = block[ block.length - 1 ].boardPos;
+			
+			if ( gameBoard.tiles[pos.y + 1][pos.x].letter != null )
+			{			
+				for ( var j = 0; j < block.length; j++ )
+				{
+					var pos    = block[j].boardPos;
+					var letter = block[j].ltr; 
+					var tile   = gameBoard.tiles[pos.y + 1][pos.x];
+					
+					tile.letter = letter;
+					updateList.push( tile );
+				}
+			}
+			else
+				removeElement( blocks, i );
+		}
+	}
 }
 
 function applyPhysics()
 {
 //	for ( var i = 0; i < physicsList.length; i++ )
 	
-	if ( !isEmpty( physicsList ) )
+	while( !isEmpty( physicsList ) )
 	{
 		var physicsObject = physicsList.shift(); 
 		var pos  = physicsObject.pos;
-		if ( gameBoard.tiles[pos.y][pos.x].letter == null ) return 0;
+		if ( gameBoard.tiles[pos.y][pos.x].letter == null ) continue //return 0;
 		//	removeElement( physicsObject, i, physicsList );
 		else
 		{
 			var tile = physicsObject.aTile;
 			
-			if ( pos.y + 1 == gameBoard.gridHeight ) return 0;
+			if ( pos.y + 1 == gameBoard.gridHeight ) continue// return 0;
 		//		removeElement( physicsObject, i, physicsList );
 			else
 			{
-				if ( gameBoard.tiles[pos.y+1][pos.x].letter != null ) return 0;
+				if ( gameBoard.tiles[pos.y+1][pos.x].letter != null ) continue// return 0;
 			//		removeElement( physicsObject, i, physicsList );
 				else
 				{
@@ -687,6 +870,7 @@ function applyPhysics()
 					//	gameBoard.tiles[pos.y+1][pos.x] = tile;
 						gameBoard.tiles[pos.y][pos.x].letter = null;
 						reloadCols.push( pos.x );
+					//	updateList.push( downNeighbour );
 					//	clearList.push( { aTile : tile, pos : { x : pos.x, y : pos.y } } );
 					//	updateList.push( downNeighbour );
 
@@ -703,7 +887,7 @@ function applyPhysics()
 function reloadBoard( columns )
 {
 //	for ( var i = 0; i < columns.length; i++ )
-	if ( !isEmpty( columns ) )
+	while ( !isEmpty( columns ) )
 	{
 		var col = columns.shift();
 		var character = generator.generateCharacter();
@@ -725,33 +909,45 @@ function reloadBoard( columns )
 }
 
 var pause = 2000;
+var isCleared = false;
 function render()
 {
+	gameBoard.canvas.removeEventListener( "click", mouseClickEvent, false );
 	while ( !isEmpty( updateList ) )
 	{
 		var tile = updateList.shift();
 		tile.draw( gameBoard.canvas.getContext( "2d" ), gameBoard.scale );
 		timer = 0.5 * 1000;
 	}
-	
+		
 	timer -= animSpeed;
+	
 	if ( timer < 0 )
-	{
+	{	
 	//	doRedraw();
 	//	pause = 500;
 		clear();
+		
+		isCleared = true;
+	//timer = 0.5 * 500;
 	//	timer = 500;
-	
-	
-	pause -= animSpeed;
+		pause -= animSpeed;
 //	if ( pause < 0 )
-	{
+		{
+			reloadBoard( reloadCols );
+			gameBoard.canvas.addEventListener( "click", mouseClickEvent, false );
+		//	gameBoard.checkBoard();
 //	pause = 500;
-		reloadBoard( reloadCols )
+		}
+	}
+}
+
+function checkWords()
+{
+	gameBoard.checkBoard();
 	
-	}
-	}
-	updateScore();
+	if ( isGameRunning )
+		setTimeout( "checkWords()", 5000 );
 }
 
 function run()
@@ -764,7 +960,16 @@ function run()
 			tile.letter.color = oldColor;
 			tile.draw( gameBoard.canvas.getContext( "2d" ), gameBoard.scale );
 		}
+		updateScore();
+	//	gameBoard.checkBoard();
+	//	gameBoard.canvas.removeEventListener( "click", mouseClickEvent, false );
 		applyPhysics();
+	//	gameBoard.canvas.addEventListener( "click", mouseClickEvent, false );
+	//	if ( isCleared && !isEmpty( blocks ) )
+	//		updateBlocks();
+	//	else
+	//		isCleared = false;
+		
 		render();
 	}	
 	else

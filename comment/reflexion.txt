@@ -1,0 +1,26 @@
+recuperer le block et le mettre dans un tableau
+stocker tous les blocks dans un tableau
+si possible 
+	mettre à jour leur position (aussi dans le tableau de cases, donc ancienne pos = null)
+sinon 
+	eliminer le block du tableau (fonction deja faite)
+ajouter une nouvelle case au block 
+rendu des blocks
+
+animation finit quand le tableau des blocs est vide
+
+var blocks;
+updateList
+
+obj = linPos, ltr;
+presentation graphics sound gameplay lasting appeal
+
+
+Game Arts ISART!
+Philippe 
+IHM/GD/Dev GD Platforms
+Prof Android
+ 
+
+
+15h-16h30 : presentation jeu HTML

@@ -5,15 +5,14 @@ html
 
 body 
 {
-	background       : #000;
-	background-image : url('../images/background/background.png');
-	color            : #888;
-	font-family      : Helvetica,sans-serif; 
-	font-size        : 11px;
-	overflow         : hidden;
-	margin           : 0;
-	padding          : 0;
-	width            : 2048px;
+	background          : #000;
+	color               : #888;
+	font-family         : Helvetica,sans-serif; 
+	font-size           : 11px;
+	overflow            : hidden;
+	margin              : 0;
+	padding             : 0;
+	width               : 2048px;
 }
 
 #gameSpace
@@ -97,7 +96,7 @@ select.selection
 	    #444 0%,
 	    #000 100%
 	);
-	
+
 	-webkit-user-select: none;
 }
 
@@ -130,6 +129,11 @@ select.selection
 	background: #222 -moz-linear-gradient(100% 100% 90deg, #666, #222);
 }
 
+#backButton
+{
+	margin-left : 20px;
+	margin-top  : 20px;
+}
 div.space
 {
 	width  : auto;
